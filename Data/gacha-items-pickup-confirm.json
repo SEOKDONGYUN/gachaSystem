@@ -1,0 +1,26 @@
+[
+  {
+    "Id": 1,
+    "Name": "유메",
+    "Rarity": 3,
+    "BaseWeight": 3
+  },
+  {
+    "Id": 2,
+    "Name": "호시노",
+    "Rarity": 3,
+    "BaseWeight": 3
+  },
+  {
+    "Id": 3,
+    "Name": "노노미",
+    "Rarity": 2,
+    "BaseWeight": 45
+  },
+  {
+    "Id": 4,
+    "Name": "시로코",
+    "Rarity": 2,
+    "BaseWeight": 45
+  }
+]

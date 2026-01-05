@@ -5,6 +5,6 @@ namespace GachaSystem.Models
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public Rarity Rarity { get; set; }
-        public double BaseWeight { get; set; }
+        public int BaseWeight { get; set; }
     }
 }
