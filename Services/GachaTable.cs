@@ -43,7 +43,7 @@ namespace GachaSystem.Services
             foreach (var jsonFilePath in jsonFiles)
             {
                 var fileName = Path.GetFileNameWithoutExtension(jsonFilePath);
-                var poolName = fileName.Replace("gacha-items-", "").Replace("gacha-items", "normal");
+                var poolName = fileName.Replace("gacha-items-", "");
 
                 var jsonString = File.ReadAllText(jsonFilePath);
                 var items = JsonSerializer.Deserialize<List<GachaItem>>(jsonString);

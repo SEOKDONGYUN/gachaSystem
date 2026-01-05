@@ -26,11 +26,7 @@ namespace GachaSystem.Services
             int pullCount = 10;
             string poolName = "normal";
 
-            var result = new GachaResult
-            {
-                TotalPulls = pullCount,
-                Timestamp = DateTime.UtcNow
-            };
+            var pulledItems = new List<GachaItem>();
 
             for (int i = 0; i < pullCount; i++)
             {
@@ -39,27 +35,27 @@ namespace GachaSystem.Services
                 var weightedRandom = _gachaTable.GetWeightedRandomPool(currentPoolName);
 
                 var item = weightedRandom.Random();
-                result.Items.Add(item);
+                pulledItems.Add(item);
             }
 
-            return result;
+            return CreateGachaResult(pulledItems, new List<int>());
         }
 
         /// <summary>
         /// 픽업 가챠 (10회)
         /// 특정 아이템의 가중치에 boostMultiplier를 더해 확률 상승
         /// 10회째는 pickup-confirm 풀을 사용하여 레어리티 2 이상 확정
-        /// 레어리티 3(SSR) 아이템만 픽업 가능
+        /// 레어리티 3(SSR) 아이템 3개 픽업 필수
         /// </summary>
         public GachaResult PullPickupGacha(List<int> pickupItemIds)
         {
             int pullCount = 10;
-            int boostMultiplier = 4;
+            int boostMultiplier = 100;
             string poolName = "pickup";
 
-            if (pickupItemIds.Count > 5)
+            if (pickupItemIds.Count != 3)
             {
-                throw new ArgumentException("픽업 아이템은 최대 5개까지 선택할 수 있습니다.");
+                throw new ArgumentException("픽업 아이템은 정확히 3개를 선택해야 합니다.");
             }
 
             // 픽업 아이템들이 레어리티 3인지 확인
@@ -99,21 +95,17 @@ namespace GachaSystem.Services
                 confirmWeightedRandom.Push(weight, item);
             }
 
-            var result = new GachaResult
-            {
-                TotalPulls = pullCount,
-                Timestamp = DateTime.UtcNow
-            };
+            var pulledItems = new List<GachaItem>();
 
             for (int i = 0; i < pullCount; i++)
             {
                 // 10회째(마지막)는 pickup-confirm 풀 사용, 나머지는 pickup 풀 사용
                 var weightedRandom = (i == pullCount - 1) ? confirmWeightedRandom : normalWeightedRandom;
                 var selectedItem = weightedRandom.Random();
-                result.Items.Add(selectedItem);
+                pulledItems.Add(selectedItem);
             }
 
-            return result;
+            return CreateGachaResult(pulledItems, pickupItemIds);
         }
 
         /// <summary>
@@ -122,6 +114,34 @@ namespace GachaSystem.Services
         public List<string> GetAvailablePools()
         {
             return _gachaTable.GetAvailablePools();
+        }
+
+        /// <summary>
+        /// 뽑은 아이템 리스트를 GachaResult로 변환
+        /// </summary>
+        private GachaResult CreateGachaResult(List<GachaItem> pulledItems, List<int> pickupItemIds)
+        {
+            var result = new GachaResult();
+
+            // Result: 뽑은 모든 아이템 (10개 그대로)
+            result.Result = pulledItems.Select(item => new GachaResultItem
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Rarity = item.Rarity,
+                PickUp = pickupItemIds.Contains(item.Id)  // 픽업 캐릭터가 당첨되었을 때 true
+            }).ToList();
+
+            // Items: 아이템별 획득 개수 (Id, Count)
+            result.Items = pulledItems.GroupBy(x => x.Id)
+                .Select(g => new GachaItemCount
+                {
+                    Id = g.Key,
+                    Count = g.Count()
+                })
+                .ToList();
+
+            return result;
         }
     }
 }

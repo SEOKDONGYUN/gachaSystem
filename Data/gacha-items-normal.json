@@ -3,36 +3,36 @@
     "Id": 1,
     "Name": "유메",
     "Rarity": 3,
-    "BaseWeight": 5
+    "BaseWeight": 500
   },
   {
     "Id": 2,
     "Name": "호시노",
     "Rarity": 3,
-    "BaseWeight": 5
+    "BaseWeight": 500
   },
   {
     "Id": 3,
     "Name": "노노미",
     "Rarity": 2,
-    "BaseWeight": 15
+    "BaseWeight": 1500
   },
   {
     "Id": 4,
     "Name": "시로코",
     "Rarity": 2,
-    "BaseWeight": 15
+    "BaseWeight": 1500
   },
   {
     "Id": 5,
     "Name": "세리카",
     "Rarity": 1,
-    "BaseWeight": 30
+    "BaseWeight": 3000
   },
   {
     "Id": 6,
     "Name": "아야네",
     "Rarity": 1,
-    "BaseWeight": 30
+    "BaseWeight": 3000
   }
 ]

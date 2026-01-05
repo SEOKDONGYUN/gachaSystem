@@ -17,7 +17,7 @@ namespace Services
         private class WeightedItem
         {
             public int Base { get; set; }
-            public T Value { get; set; }
+            public required T Value { get; set; }
             public int Weight { get; set; }
         }
 

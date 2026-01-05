@@ -2,8 +2,7 @@ namespace GachaSystem.Models
 {
     public class GachaResult
     {
-        public List<GachaItem> Items { get; set; } = new List<GachaItem>();
-        public int TotalPulls { get; set; }
-        public DateTime Timestamp { get; set; }
+        public List<GachaResultItem> Result { get; set; } = new List<GachaResultItem>();
+        public List<GachaItemCount> Items { get; set; } = new List<GachaItemCount>();
     }
 }

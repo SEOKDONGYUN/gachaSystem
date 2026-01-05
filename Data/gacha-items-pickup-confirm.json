@@ -1,26 +1,80 @@
 [
   {
-    "Id": 1,
-    "Name": "유메",
+    "Id": 7,
+    "Name": "리오",
     "Rarity": 3,
-    "BaseWeight": 3
+    "BaseWeight": 100
   },
   {
-    "Id": 2,
-    "Name": "호시노",
+    "Id": 8,
+    "Name": "유우카",
+    "Rarity": 2,
+    "BaseWeight": 1500
+  },
+  {
+    "Id": 9,
+    "Name": "노아",
+    "Rarity": 2,
+    "BaseWeight": 1500
+  },
+  {
+    "Id": 15,
+    "Name": "네루",
     "Rarity": 3,
-    "BaseWeight": 3
+    "BaseWeight": 100
   },
   {
-    "Id": 3,
-    "Name": "노노미",
-    "Rarity": 2,
-    "BaseWeight": 45
+    "Id": 16,
+    "Name": "아스나",
+    "Rarity": 3,
+    "BaseWeight": 100
   },
   {
-    "Id": 4,
-    "Name": "시로코",
+    "Id": 17,
+    "Name": "카린",
     "Rarity": 2,
-    "BaseWeight": 45
+    "BaseWeight": 1500
+  },
+  {
+    "Id": 18,
+    "Name": "아카네",
+    "Rarity": 2,
+    "BaseWeight": 1500
+  },
+  {
+    "Id": 20,
+    "Name": "우타하",
+    "Rarity": 3,
+    "BaseWeight": 100
+  },
+  {
+    "Id": 23,
+    "Name": "치히로",
+    "Rarity": 3,
+    "BaseWeight": 100
+  },
+  {
+    "Id": 25,
+    "Name": "하레",
+    "Rarity": 2,
+    "BaseWeight": 1500
+  },
+  {
+    "Id": 26,
+    "Name": "코타마",
+    "Rarity": 3,
+    "BaseWeight": 100
+  },
+  {
+    "Id": 27,
+    "Name": "스미레",
+    "Rarity": 2,
+    "BaseWeight": 1500
+  },
+  {
+    "Id": 29,
+    "Name": "히마리",
+    "Rarity": 3,
+    "BaseWeight": 100
   }
 ]

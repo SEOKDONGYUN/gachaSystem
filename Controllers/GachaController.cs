@@ -18,21 +18,6 @@ namespace GachaSystem.Controllers
         }
 
         /// <summary>
-        /// 사용 가능한 가챠 풀 목록 조회
-        /// </summary>
-        [HttpGet("pools")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<List<string>> GetAvailablePools()
-        {
-            var pools = _gachaService.GetAvailablePools();
-            return Ok(new
-            {
-                Message = "사용 가능한 가챠 풀 목록",
-                Pools = pools
-            });
-        }
-
-        /// <summary>
         /// 일반 가챠 뽑기 (10회 고정)
         /// </summary>
         [HttpPost("pull")]
@@ -59,21 +44,16 @@ namespace GachaSystem.Controllers
         }
 
         /// <summary>
-        /// 픽업 가챠 뽑기 (10회 고정, SSR 아이템만 픽업 가능)
+        /// 픽업 가챠 뽑기 (10회 고정, SSR 아이템 3개 픽업 필수)
         /// </summary>
-        [HttpPost("pull/pickup")]
+        [HttpPost("pickup")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public ActionResult<GachaResult> PullPickupGacha([FromBody] PickupGachaRequest request)
         {
-            if (request.PickupItemIds == null || request.PickupItemIds.Count == 0)
+            if (request.PickupItemIds == null || request.PickupItemIds.Count != 3)
             {
-                return BadRequest(new { message = "픽업할 아이템을 최소 1개 이상 선택해야 합니다." });
-            }
-
-            if (request.PickupItemIds.Count > 5)
-            {
-                return BadRequest(new { message = "픽업 아이템은 최대 5개까지 선택할 수 있습니다." });
+                return BadRequest(new { message = "픽업 아이템은 정확히 3개를 선택해야 합니다." });
             }
 
             try
