@@ -1,80 +1,38 @@
 [
   {
     "Id": 1,
-    "Name": "레전더리 소드",
+    "Name": "유메",
     "Rarity": 3,
-    "BaseWeight": 0.5
+    "BaseWeight": 5
   },
   {
     "Id": 2,
-    "Name": "드래곤 아머",
+    "Name": "호시노",
     "Rarity": 3,
-    "BaseWeight": 0.5
+    "BaseWeight": 5
   },
   {
     "Id": 3,
-    "Name": "마법 스태프",
+    "Name": "노노미",
     "Rarity": 2,
-    "BaseWeight": 2.5
+    "BaseWeight": 15
   },
   {
     "Id": 4,
-    "Name": "미스릴 실드",
+    "Name": "시로코",
     "Rarity": 2,
-    "BaseWeight": 2.5
+    "BaseWeight": 15
   },
   {
     "Id": 5,
-    "Name": "엘븐 보우",
-    "Rarity": 2,
-    "BaseWeight": 2.5
+    "Name": "세리카",
+    "Rarity": 1,
+    "BaseWeight": 30
   },
   {
     "Id": 6,
-    "Name": "스틸 소드",
+    "Name": "아야네",
     "Rarity": 1,
-    "BaseWeight": 10
-  },
-  {
-    "Id": 7,
-    "Name": "레더 아머",
-    "Rarity": 1,
-    "BaseWeight": 10
-  },
-  {
-    "Id": 8,
-    "Name": "배틀 액스",
-    "Rarity": 1,
-    "BaseWeight": 10
-  },
-  {
-    "Id": 9,
-    "Name": "크로스보우",
-    "Rarity": 1,
-    "BaseWeight": 10
-  },
-  {
-    "Id": 10,
-    "Name": "나무 검",
-    "Rarity": 0,
-    "BaseWeight": 37
-  },
-  {
-    "Id": 11,
-    "Name": "천 갑옷",
-    "Rarity": 0,
-    "BaseWeight": 37
-  },
-  {
-    "Id": 12,
-    "Name": "작은 단검",
-    "Rarity": 0,
-    "BaseWeight": 37
-  },
-  {
-    "Id": 13,
-    "Name": "우드 스태프",
-    "Rarity": 0,
-    "BaseWeight": 37
+    "BaseWeight": 30
   }
 ]
