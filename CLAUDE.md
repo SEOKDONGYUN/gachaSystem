@@ -80,7 +80,6 @@ dotnet restore
       "totalPulls": 50,
       "items": [
         { "id": 1, "name": "유메", "rarity": 3, "count": 5, "percentage": 10.0 },
-        { "id": 7, "name": "리오", "rarity": 3, "count": 3, "percentage": 6.0 },
         { "id": 3, "name": "노노미", "rarity": 2, "count": 15, "percentage": 30.0 }
       ]
     }
@@ -147,7 +146,6 @@ dotnet restore
 
 ## API 엔드포인트
 
-- `GET /api/gacha/pools` - 사용 가능한 가챠 풀 목록 조회
 - `POST /api/gacha/pull` - 일반 가챠 (10회 뽑기, 파라미터 없음)
 - `POST /api/gacha/pickup` - 픽업 가챠 (정확히 3개의 SSR 아이템 ID 필요)
 - `GET /api/gacha/statistics` - 누적 통계 조회 (일반/픽업 가챠 구분)

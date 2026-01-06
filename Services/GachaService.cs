@@ -117,14 +117,6 @@ namespace GachaSystem.Services
         }
 
         /// <summary>
-        /// 사용 가능한 모든 가챠 풀 이름 목록 반환
-        /// </summary>
-        public List<string> GetAvailablePools()
-        {
-            return _gachaTable.GetAvailablePools();
-        }
-
-        /// <summary>
         /// 누적 통계 초기화
         /// </summary>
         public void ResetStatistics()

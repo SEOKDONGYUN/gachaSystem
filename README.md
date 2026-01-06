@@ -48,21 +48,7 @@ dotnet run
 
 ## API 엔드포인트
 
-### 1. 사용 가능한 가챠 풀 목록 조회
-
-```http
-GET /api/gacha/pools
-```
-
-**응답 예시:**
-```json
-{
-  "message": "사용 가능한 가챠 풀 목록",
-  "pools": ["normal", "confirm", "pickup", "pickup-confirm"]
-}
-```
-
-### 2. 일반 가챠 뽑기
+### 1. 일반 가챠 뽑기
 
 ```http
 POST /api/gacha/pull
@@ -77,34 +63,45 @@ POST /api/gacha/pull
 ```json
 {
   "result": [
-    {
-      "id": 7,
-      "name": "리오",
-      "rarity": 3,
-      "pickUp": false
+    // 10개의 모든 뽑기 결과
+    { 
+      "id": 1,
+      "name": "유메", 
+      "rarity": 3, 
+      "pickUp": false 
     },
-    {
-      "id": 8,
-      "name": "유우카",
-      "rarity": 2,
-      "pickUp": false
+    { 
+      "id": 3, 
+      "name": "노노미", 
+      "rarity": 2, 
+      "pickUp": false 
     }
-    // ... 총 10개
   ],
-  "items": [
-    {
-      "id": 7,
-      "count": 3
-    },
-    {
-      "id": 8,
-      "count": 7
+  "statistics": {
+    "normal": {
+      "totalPulls": 50,
+      "items": [
+        { 
+          "id": 1, 
+          "name": "유메", 
+          "rarity": 3, 
+          "count": 5, 
+          "percentage": 10 
+        },
+        { 
+          "id": 3, 
+          "name": "노노미", 
+          "rarity": 2, 
+          "count": 15, 
+          "percentage": 30
+        }
+      ]
     }
-  ]
+  }
 }
 ```
 
-### 3. 픽업 가챠 뽑기
+### 2. 픽업 가챠 뽑기
 
 ```http
 POST /api/gacha/pickup
@@ -129,34 +126,34 @@ Content-Type: application/json
 ```json
 {
   "result": [
-    {
-      "id": 7,
-      "name": "리오",
-      "rarity": 3,
-      "pickUp": true    // 픽업 캐릭터가 당첨됨
+    // 10개의 모든 뽑기 결과
+    { 
+      "id": 7, 
+      "name": "리오", 
+      "rarity": 3, 
+      "pickUp": true
     },
-    {
-      "id": 8,
-      "name": "유우카",
-      "rarity": 2,
-      "pickUp": false
+    { 
+      "id": 8, 
+      "name": "유우카", 
+      "rarity": 2, 
+      "pickUp": false 
     }
-    // ... 총 10개
   ],
-  "items": [
-    {
-      "id": 7,
-      "count": 5
-    },
-    {
-      "id": 8,
-      "count": 3
-    },
-    {
-      "id": 9,
-      "count": 2
+  "statistics": {
+    "pickup": {
+      "totalPulls": 30,
+      "items": [
+        { 
+          "id": 7, 
+          "name": "리오", 
+          "rarity": 3, 
+          "count": 8, 
+          "percentage": 26.67
+        }
+      ]
     }
-  ]
+  }
 }
 ```
 
@@ -169,15 +166,15 @@ Content-Type: application/json
 |------|------|--------|------|
 | SSR (레어리티 3) | 7개 | 100 | 7% |
 | SR (레어리티 2) | 6개 | 500 | 30% |
-| R (레어리티 1) | 11개 | 572-573 | 63% |
-| **합계** | **24개** | **10000** | **100%** |
+| R (레어리티 1) | 11개 | 572-573 | 60% |
+| **합계** | **24개** | **9700** | **97%** |
 
 **확정 풀 (confirm):**
 | 등급 | 개수 | 가중치 | 확률 |
 |------|------|--------|------|
-| SSR (레어리티 3) | 7개 | 100 | 7.22% |
-| SR (레어리티 2) | 6개 | 1500 | 92.78% |
-| **합계** | **13개** | **9700** | **100%** |
+| SSR (레어리티 3) | 7개 | 100 | 7% |
+| SR (레어리티 2) | 6개 | 1500 | 90% |
+| **합계** | **13개** | **9700** | **97%** |
 
 ### 픽업 가챠 시스템
 
@@ -210,13 +207,13 @@ Content-Type: application/json
 
 ## 기술 스택
 
-✅ **ASP.NET Core 8.0**: 웹 API 프레임워크
-✅ **의존성 주입**: Interface 기반 서비스 설계
-✅ **싱글톤 패턴**: GachaTable을 통한 데이터 중앙 관리
-✅ **가중치 알고리즘**: 이진 탐색 기반 O(log n) 성능
-✅ **JSON 데이터**: 외부 파일 기반 유연한 데이터 관리
-✅ **Swagger/OpenAPI**: API 문서화 및 테스트 UI
-✅ **로깅**: ILogger를 통한 로그 관리
+✅ **ASP.NET Core 8.0**: 웹 API 프레임워크 \
+✅ **의존성 주입**: Interface 기반 서비스 설계 \
+✅ **싱글톤 패턴**: GachaTable을 통한 데이터 중앙 관리 \
+✅ **가중치 알고리즘**: 이진 탐색 기반 O(log n) 성능 \
+✅ **JSON 데이터**: 외부 파일 기반 유연한 데이터 관리 \
+✅ **Swagger/OpenAPI**: API 문서화 및 테스트 UI \
+✅ **로깅**: ILogger를 통한 로그 관리 
 
 ## 아키텍처 특징
 

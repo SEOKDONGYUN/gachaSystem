@@ -97,10 +97,5 @@ namespace GachaSystem.Services
             }
             return _weightedRandomPools[poolName];
         }
-
-        public List<string> GetAvailablePools()
-        {
-            return _gachaPools.Keys.ToList();
-        }
     }
 }
