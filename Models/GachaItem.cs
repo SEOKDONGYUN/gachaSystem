@@ -19,6 +19,9 @@ namespace GachaSystem.Models
     public class GachaItemCount
     {
         public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public Rarity Rarity { get; set; }
         public int Count { get; set; }
+        public double Percentage { get; set; }  // 전체 뽑기 중 이 아이템이 차지하는 비율 (%)
     }
 }

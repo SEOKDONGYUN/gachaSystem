@@ -66,23 +66,59 @@ dotnet restore
 ### 응답 형식
 
 **GachaResult 구조:**
+
+일반 가챠 응답:
 ```json
 {
   "result": [
-    // 픽업 플래그가 있는 10개의 모든 뽑기 결과
+    // 10개의 모든 뽑기 결과
+    { "id": 1, "name": "유메", "rarity": 3, "pickUp": false },
+    { "id": 3, "name": "노노미", "rarity": 2, "pickUp": false }
+  ],
+  "statistics": {
+    "normal": {
+      "totalPulls": 50,
+      "items": [
+        { "id": 1, "name": "유메", "rarity": 3, "count": 5, "percentage": 10.0 },
+        { "id": 7, "name": "리오", "rarity": 3, "count": 3, "percentage": 6.0 },
+        { "id": 3, "name": "노노미", "rarity": 2, "count": 15, "percentage": 30.0 }
+      ]
+    }
+  }
+}
+```
+
+픽업 가챠 응답:
+```json
+{
+  "result": [
+    // 10개의 모든 뽑기 결과
     { "id": 7, "name": "리오", "rarity": 3, "pickUp": true },
     { "id": 8, "name": "유우카", "rarity": 2, "pickUp": false }
   ],
-  "items": [
-    // 아이템 ID별 집계된 개수
-    { "id": 7, "count": 3 },
-    { "id": 8, "count": 7 }
-  ]
+  "statistics": {
+    "pickup": {
+      "totalPulls": 30,
+      "items": [
+        { "id": 7, "name": "리오", "rarity": 3, "count": 8, "percentage": 26.67 }
+      ]
+    }
+  }
 }
 ```
 
 - **`result`**: 10개의 개별 뽑기 결과, 선택된 픽업 캐릭터가 당첨되면 `pickUp: true`
-- **`items`**: 아이템 ID별로 그룹화된 집계 개수
+- **`statistics`**: 누적 통계 (현재 뽑기 타입만 포함)
+  - **`normal`**: 일반 가챠 누적 통계 (일반 가챠 응답 시에만 포함)
+    - `totalPulls`: 누적 일반 가챠 횟수
+    - `items`: 아이템별 누적 개수 및 확률 (레어리티 내림차순 → ID 오름차순 정렬)
+  - **`pickup`**: 픽업 가챠 누적 통계 (픽업 가챠 응답 시에만 포함)
+    - `totalPulls`: 누적 픽업 가챠 횟수
+    - `items`: 아이템별 누적 개수 및 확률 (레어리티 내림차순 → ID 오름차순 정렬)
+  - 아이템 필드:
+    - `id`, `name`, `rarity`: 아이템 정보
+    - `count`: 누적 획득 개수
+    - `percentage`: 전체 뽑기 대비 백분율 (소수점 2자리)
 
 ### 주요 구현 세부사항
 
@@ -100,11 +136,22 @@ dotnet restore
 - `GachaItem.BaseWeight`는 **JSON 역직렬화용으로만** 사용됨
 - API 응답에는 포함되지 않음 (`GachaResultItem`에서 필터링)
 
+**누적 통계 시스템:**
+- GachaService 내부 변수로 일반/픽업 가챠 통계를 별도 관리
+- 각 가챠 뽑기마다 자동으로 누적 통계 업데이트
+- 통계 정보:
+  - 누적 가챠 횟수 (일반/픽업 구분)
+  - 아이템별 누적 개수 및 확률 (개수 내림차순 정렬)
+  - 확률은 전체 누적 뽑기 대비 백분율로 표시 (소수점 2자리)
+- 싱글톤 서비스로 운영되므로 서버 재시작 시 통계 초기화됨
+
 ## API 엔드포인트
 
 - `GET /api/gacha/pools` - 사용 가능한 가챠 풀 목록 조회
 - `POST /api/gacha/pull` - 일반 가챠 (10회 뽑기, 파라미터 없음)
 - `POST /api/gacha/pickup` - 픽업 가챠 (정확히 3개의 SSR 아이템 ID 필요)
+- `GET /api/gacha/statistics` - 누적 통계 조회 (일반/픽업 가챠 구분)
+- `POST /api/gacha/statistics/reset` - 누적 통계 초기화
 
 ## 중요한 제약사항
 

@@ -73,5 +73,44 @@ namespace GachaSystem.Controllers
                 return StatusCode(500, new { message = "가챠 실행 중 오류가 발생했습니다." });
             }
         }
+
+        /// <summary>
+        /// 누적 통계 조회
+        /// </summary>
+        [HttpGet("statistics")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<GachaStatistics> GetStatistics()
+        {
+            try
+            {
+                var statistics = _gachaService.GetStatistics();
+                return Ok(statistics);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "통계 조회 중 오류 발생");
+                return StatusCode(500, new { message = "통계 조회 중 오류가 발생했습니다." });
+            }
+        }
+
+        /// <summary>
+        /// 누적 통계 초기화
+        /// </summary>
+        [HttpPost("statistics/reset")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult ResetStatistics()
+        {
+            try
+            {
+                _gachaService.ResetStatistics();
+                _logger.LogInformation("누적 통계 초기화");
+                return Ok(new { message = "누적 통계가 초기화되었습니다." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "통계 초기화 중 오류 발생");
+                return StatusCode(500, new { message = "통계 초기화 중 오류가 발생했습니다." });
+            }
+        }
     }
 }
