@@ -14,13 +14,39 @@ namespace GachaSystem.Services
 
         private readonly Dictionary<string, List<GachaItem>> _gachaPools;
         private readonly Dictionary<string, WeightedRandom<GachaItem>> _weightedRandomPools;
+        private readonly GachaSettings _settings;
 
         public static GachaTable Instance => _instance.Value;
 
+        public GachaSettings Settings => _settings;
+
         private GachaTable()
         {
+            _settings = LoadSettings();
             _gachaPools = InitializeGachaPools();
             _weightedRandomPools = InitializeWeightedRandomPools();
+        }
+
+        private GachaSettings LoadSettings()
+        {
+            var dataDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
+            var settingsFilePath = Path.Combine(dataDirectory, "gacha-settings.json");
+
+            if (!File.Exists(settingsFilePath))
+            {
+                // 설정 파일이 없으면 기본값 사용
+                return new GachaSettings();
+            }
+
+            var jsonString = File.ReadAllText(settingsFilePath);
+            var settings = JsonSerializer.Deserialize<GachaSettings>(jsonString);
+
+            if (settings == null)
+            {
+                throw new InvalidOperationException($"가챠 설정을 로드할 수 없습니다: {settingsFilePath}");
+            }
+
+            return settings;
         }
 
         private Dictionary<string, List<GachaItem>> InitializeGachaPools()

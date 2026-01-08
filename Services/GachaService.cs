@@ -58,7 +58,7 @@ namespace GachaSystem.Services
         public GachaResult PullPickupGacha(List<int> pickupItemIds)
         {
             int pullCount = 10;
-            int boostMultiplier = 100;
+            int boostMultiplier = _gachaTable.Settings.BoostMultiplier;
             string poolName = "pickup";
 
             if (pickupItemIds.Count != 3)
