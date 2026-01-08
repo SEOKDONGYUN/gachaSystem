@@ -1,0 +1,262 @@
+@page "/"
+@inject IGachaService GachaService
+
+<PageTitle>가챠 시스템</PageTitle>
+
+<div class="gacha-container">
+    <div class="tab-container">
+        <button class="tab-button @(activeTab == "normal" ? "active" : "")"
+                @onclick="@(() => SwitchTab("normal"))">
+            일반 가챠
+        </button>
+        <button class="tab-button @(activeTab == "pickup" ? "active" : "")"
+                @onclick="@(() => SwitchTab("pickup"))">
+            픽업 가챠
+        </button>
+    </div>
+
+    <div class="content-wrapper">
+        @if (activeTab == "normal")
+    {
+        <div class="gacha-section">
+            <h2>일반 가챠</h2>
+            <button class="btn btn-primary" @onclick="PullNormalGacha" disabled="@isLoading">
+                @if (isLoading && currentGachaType == "normal")
+                {
+                    <span>뽑는 중...</span>
+                }
+                else
+                {
+                    <span>10연차 뽑기</span>
+                }
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="gacha-section">
+            <h2>픽업 가챠</h2>
+            <p class="pickup-instruction">정확히 3개의 SSR 캐릭터를 선택하세요:</p>
+
+            <div class="pickup-selection">
+                @foreach (var item in ssrItems)
+                {
+                    <label class="pickup-item @(selectedPickupIds.Count >= 3 && !selectedPickupIds.Contains(item.Id) ? "disabled" : "")">
+                        <input type="checkbox"
+                               checked="@selectedPickupIds.Contains(item.Id)"
+                               @onchange="@((e) => TogglePickup(item.Id, (bool)e.Value!))"
+                               disabled="@(isLoading || (selectedPickupIds.Count >= 3 && !selectedPickupIds.Contains(item.Id)))" />
+                        <span>@item.Name</span>
+                    </label>
+                }
+            </div>
+
+            <button class="btn btn-primary"
+                    @onclick="PullPickupGacha"
+                    disabled="@(isLoading || selectedPickupIds.Count != 3)">
+                @if (isLoading && currentGachaType == "pickup")
+                {
+                    <span>뽑는 중...</span>
+                }
+                else if (selectedPickupIds.Count != 3)
+                {
+                    <span>10연차 뽑기 (@selectedPickupIds.Count/3 선택됨)</span>
+                }
+                else
+                {
+                    <span>10연차 뽑기</span>
+                }
+            </button>
+        </div>
+    }
+
+    @if (lastResult != null)
+    {
+        <div class="result-section" @key="animationKey">
+            <h2>뽑기 결과</h2>
+            <div class="result-grid">
+                @foreach (var item in lastResult.Result)
+                {
+                    <div class="result-item rarity-@((int)item.Rarity) @(item.PickUp ? "pickup-hit" : "")">
+                        <div class="item-name">@item.Name</div>
+                        <div class="item-rarity">
+                            @if (item.Rarity == Rarity.SSR)
+                            {
+                                <span class="rarity-badge">SSR</span>
+                            }
+                            else if (item.Rarity == Rarity.SR)
+                            {
+                                <span class="rarity-badge">SR</span>
+                            }
+                            else
+                            {
+                                <span class="rarity-badge">R</span>
+                            }
+                        </div>
+                        @if (item.PickUp)
+                        {
+                            <div class="pickup-badge">픽업!</div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="statistics-section" @key="@($"stats-{animationKey}")">
+            <div class="stats-header">
+                <h2>누적 통계</h2>
+                <button class="btn btn-reset" @onclick="ResetStatistics" disabled="@isLoading">
+                    통계 초기화
+                </button>
+            </div>
+
+            @if (lastResult.Statistics.Normal != null)
+            {
+                <div class="stats-box">
+                    <h3>일반 가챠 통계</h3>
+                    <p class="total-pulls">총 @(lastResult.Statistics.Normal.TotalPulls)회 뽑기</p>
+                    <div class="stats-table">
+                        @foreach (var item in lastResult.Statistics.Normal.Items)
+                        {
+                            <div class="stats-row rarity-@((int)item.Rarity)">
+                                <span class="stats-name">@item.Name</span>
+                                <span class="stats-count">@(item.Count)회</span>
+                                <span class="stats-percentage">@(item.Percentage.ToString("F2"))%</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (lastResult.Statistics.Pickup != null)
+            {
+                <div class="stats-box">
+                    <h3>픽업 가챠 통계</h3>
+                    <p class="total-pulls">총 @(lastResult.Statistics.Pickup.TotalPulls)회 뽑기</p>
+                    <div class="stats-table">
+                        @foreach (var item in lastResult.Statistics.Pickup.Items)
+                        {
+                            <div class="stats-row rarity-@((int)item.Rarity)">
+                                <span class="stats-name">@item.Name</span>
+                                <span class="stats-count">@(item.Count)회</span>
+                                <span class="stats-percentage">@(item.Percentage.ToString("F2"))%</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="error-message">
+                <strong>오류:</strong> @errorMessage
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<GachaItem> ssrItems = new();
+    private HashSet<int> selectedPickupIds = new();
+    private GachaResult? lastResult;
+    private bool isLoading = false;
+    private string currentGachaType = "";
+    private string errorMessage = "";
+    private Guid animationKey = Guid.NewGuid();
+    private string activeTab = "normal";
+
+    protected override void OnInitialized()
+    {
+        // SSR 아이템 목록 로드
+        var allItems = GachaTable.Instance.GetGachaPool("pickup");
+        ssrItems = allItems.Where(item => item.Rarity == Rarity.SSR)
+                          .OrderBy(item => item.Id)
+                          .ToList();
+    }
+
+    private void SwitchTab(string tab)
+    {
+        activeTab = tab;
+    }
+
+    private void TogglePickup(int id, bool isChecked)
+    {
+        if (isChecked)
+        {
+            if (selectedPickupIds.Count < 3)
+            {
+                selectedPickupIds.Add(id);
+            }
+        }
+        else
+        {
+            selectedPickupIds.Remove(id);
+        }
+    }
+
+    private void PullNormalGacha()
+    {
+        isLoading = true;
+        currentGachaType = "normal";
+        errorMessage = "";
+
+        try
+        {
+            lastResult = GachaService.PullGacha();
+            animationKey = Guid.NewGuid(); // 애니메이션 다시 재생
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+            currentGachaType = "";
+        }
+    }
+
+    private void PullPickupGacha()
+    {
+        if (selectedPickupIds.Count != 3)
+        {
+            errorMessage = "정확히 3개의 SSR 캐릭터를 선택해야 합니다.";
+            return;
+        }
+
+        isLoading = true;
+        currentGachaType = "pickup";
+        errorMessage = "";
+
+        try
+        {
+            lastResult = GachaService.PullPickupGacha(selectedPickupIds.ToList());
+            animationKey = Guid.NewGuid(); // 애니메이션 다시 재생
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+            currentGachaType = "";
+        }
+    }
+
+    private void ResetStatistics()
+    {
+        try
+        {
+            GachaService.ResetStatistics();
+            lastResult = null;
+            errorMessage = "";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+}

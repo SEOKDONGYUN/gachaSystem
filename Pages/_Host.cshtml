@@ -1,0 +1,33 @@
+@page "/"
+@using Microsoft.AspNetCore.Components.Web
+@namespace GachaSystem.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="~/" />
+    <title>가챠 시스템</title>
+    <link href="css/site.css" rel="stylesheet" />
+    <link href="GachaSystem.styles.css" rel="stylesheet" />
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+</head>
+<body>
+    <component type="typeof(App)" render-mode="ServerPrerendered" />
+
+    <div id="blazor-error-ui">
+        <environment include="Staging,Production">
+            오류가 발생했습니다.
+        </environment>
+        <environment include="Development">
+            처리되지 않은 예외가 발생했습니다. 자세한 내용은 브라우저 개발자 도구를 참조하세요.
+        </environment>
+        <a href="" class="reload">새로고침</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="_framework/blazor.server.js"></script>
+</body>
+</html>
