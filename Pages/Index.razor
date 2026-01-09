@@ -101,50 +101,59 @@
                 }
             </div>
         </div>
+    }
 
-        <div class="statistics-section" @key="@($"stats-{animationKey}")">
+    @* 일반 가챠 탭의 통계 *@
+    @if (activeTab == "normal" && normalStats.TotalPulls > 0)
+    {
+        <div class="statistics-section">
             <div class="stats-header">
-                <h2>누적 통계</h2>
-                <button class="btn btn-reset" @onclick="ResetStatistics" disabled="@isLoading">
+                <h2>일반 가챠 누적 통계</h2>
+                <button class="btn btn-reset" @onclick="ResetCurrentTabStatistics" disabled="@isLoading">
                     통계 초기화
                 </button>
             </div>
 
-            @if (lastResult.Statistics.Normal != null)
-            {
-                <div class="stats-box">
-                    <h3>일반 가챠 통계</h3>
-                    <p class="total-pulls">총 @(lastResult.Statistics.Normal.TotalPulls)회 뽑기</p>
-                    <div class="stats-table">
-                        @foreach (var item in lastResult.Statistics.Normal.Items)
-                        {
-                            <div class="stats-row rarity-@((int)item.Rarity)">
-                                <span class="stats-name">@item.Name</span>
-                                <span class="stats-count">@(item.Count)회</span>
-                                <span class="stats-percentage">@(item.Percentage.ToString("F2"))%</span>
-                            </div>
-                        }
-                    </div>
+            <div class="stats-box">
+                <p class="total-pulls">총 @(normalStats.TotalPulls)회 뽑기</p>
+                <div class="stats-table">
+                    @foreach (var item in GetSortedStats(normalStats.Items))
+                    {
+                        <div class="stats-row rarity-@((int)item.Rarity)">
+                            <span class="stats-name">@item.Name</span>
+                            <span class="stats-count">@(item.Count)회</span>
+                            <span class="stats-percentage">@(((double)item.Count / normalStats.TotalPulls * 100).ToString("F2"))%</span>
+                        </div>
+                    }
                 </div>
-            }
+            </div>
+        </div>
+    }
 
-            @if (lastResult.Statistics.Pickup != null)
-            {
-                <div class="stats-box">
-                    <h3>픽업 가챠 통계</h3>
-                    <p class="total-pulls">총 @(lastResult.Statistics.Pickup.TotalPulls)회 뽑기</p>
-                    <div class="stats-table">
-                        @foreach (var item in lastResult.Statistics.Pickup.Items)
-                        {
-                            <div class="stats-row rarity-@((int)item.Rarity)">
-                                <span class="stats-name">@item.Name</span>
-                                <span class="stats-count">@(item.Count)회</span>
-                                <span class="stats-percentage">@(item.Percentage.ToString("F2"))%</span>
-                            </div>
-                        }
-                    </div>
+    @* 픽업 가챠 탭의 통계 *@
+    @if (activeTab == "pickup" && pickupStats.TotalPulls > 0)
+    {
+        <div class="statistics-section">
+            <div class="stats-header">
+                <h2>픽업 가챠 누적 통계</h2>
+                <button class="btn btn-reset" @onclick="ResetCurrentTabStatistics" disabled="@isLoading">
+                    통계 초기화
+                </button>
+            </div>
+
+            <div class="stats-box">
+                <p class="total-pulls">총 @(pickupStats.TotalPulls)회 뽑기</p>
+                <div class="stats-table">
+                    @foreach (var item in GetSortedStats(pickupStats.Items))
+                    {
+                        <div class="stats-row rarity-@((int)item.Rarity)">
+                            <span class="stats-name">@item.Name</span>
+                            <span class="stats-count">@(item.Count)회</span>
+                            <span class="stats-percentage">@(((double)item.Count / pickupStats.TotalPulls * 100).ToString("F2"))%</span>
+                        </div>
+                    }
                 </div>
-            }
+            </div>
         </div>
     }
 
@@ -166,6 +175,23 @@
     private string errorMessage = "";
     private Guid animationKey = Guid.NewGuid();
     private string activeTab = "normal";
+
+    // 프론트엔드 누적 통계
+    private GachaTypeStatistics normalStats = new();
+    private GachaTypeStatistics pickupStats = new();
+
+    private class GachaTypeStatistics
+    {
+        public int TotalPulls { get; set; } = 0;
+        public Dictionary<int, ItemStats> Items { get; set; } = new();
+    }
+
+    private class ItemStats
+    {
+        public string Name { get; set; } = string.Empty;
+        public Rarity Rarity { get; set; }
+        public int Count { get; set; } = 0;
+    }
 
     protected override void OnInitialized()
     {
@@ -196,6 +222,51 @@
         }
     }
 
+    private void UpdateStatistics(GachaResult result, bool isPickup)
+    {
+        var stats = isPickup ? pickupStats : normalStats;
+
+        stats.TotalPulls += result.Result.Count;
+
+        foreach (var item in result.Result)
+        {
+            if (stats.Items.ContainsKey(item.Id))
+            {
+                stats.Items[item.Id].Count++;
+            }
+            else
+            {
+                stats.Items[item.Id] = new ItemStats
+                {
+                    Name = item.Name,
+                    Rarity = item.Rarity,
+                    Count = 1
+                };
+            }
+        }
+    }
+
+    private List<ItemStats> GetSortedStats(Dictionary<int, ItemStats> items)
+    {
+        return items.Values
+            .OrderByDescending(x => x.Rarity)
+            .ThenBy(x => x.Name)
+            .ToList();
+    }
+
+    private void ResetCurrentTabStatistics()
+    {
+        if (activeTab == "normal")
+        {
+            normalStats = new GachaTypeStatistics();
+        }
+        else if (activeTab == "pickup")
+        {
+            pickupStats = new GachaTypeStatistics();
+        }
+        errorMessage = "";
+    }
+
     private void PullNormalGacha()
     {
         isLoading = true;
@@ -205,6 +276,7 @@
         try
         {
             lastResult = GachaService.PullGacha();
+            UpdateStatistics(lastResult, isPickup: false);
             animationKey = Guid.NewGuid(); // 애니메이션 다시 재생
         }
         catch (Exception ex)
@@ -233,6 +305,7 @@
         try
         {
             lastResult = GachaService.PullPickupGacha(selectedPickupIds.ToList());
+            UpdateStatistics(lastResult, isPickup: true);
             animationKey = Guid.NewGuid(); // 애니메이션 다시 재생
         }
         catch (Exception ex)
@@ -243,20 +316,6 @@
         {
             isLoading = false;
             currentGachaType = "";
-        }
-    }
-
-    private void ResetStatistics()
-    {
-        try
-        {
-            GachaService.ResetStatistics();
-            lastResult = null;
-            errorMessage = "";
-        }
-        catch (Exception ex)
-        {
-            errorMessage = ex.Message;
         }
     }
 }

@@ -6,7 +6,5 @@ namespace GachaSystem.Services
     {
         GachaResult PullGacha();
         GachaResult PullPickupGacha(List<int> pickupItemIds);
-        void ResetStatistics();
-        GachaStatistics GetStatistics();
     }
 }

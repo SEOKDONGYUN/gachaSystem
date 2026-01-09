@@ -9,14 +9,6 @@ namespace GachaSystem.Services
         private readonly GachaTable _gachaTable;
         private readonly Random _random;
 
-        // 누적 통계 (일반 가챠)
-        private int _cumulativeNormalPulls = 0;
-        private Dictionary<int, (string Name, Rarity Rarity, int Count)> _cumulativeNormalItems = new Dictionary<int, (string, Rarity, int)>();
-
-        // 누적 통계 (픽업 가챠)
-        private int _cumulativePickupPulls = 0;
-        private Dictionary<int, (string Name, Rarity Rarity, int Count)> _cumulativePickupItems = new Dictionary<int, (string, Rarity, int)>();
-
         public GachaService()
         {
             _random = new Random();
@@ -117,34 +109,11 @@ namespace GachaSystem.Services
         }
 
         /// <summary>
-        /// 누적 통계 초기화
-        /// </summary>
-        public void ResetStatistics()
-        {
-            _cumulativeNormalPulls = 0;
-            _cumulativeNormalItems.Clear();
-            _cumulativePickupPulls = 0;
-            _cumulativePickupItems.Clear();
-        }
-
-        /// <summary>
-        /// 현재 누적 통계 조회
-        /// </summary>
-        public GachaStatistics GetStatistics()
-        {
-            return BuildStatistics();
-        }
-
-        /// <summary>
         /// 뽑은 아이템 리스트를 GachaResult로 변환
         /// </summary>
         private GachaResult CreateGachaResult(List<GachaItem> pulledItems, List<int> pickupItemIds, bool isPickup = false)
         {
             var result = new GachaResult();
-            int totalPulls = pulledItems.Count;
-
-            // 누적 통계 업데이트
-            UpdateCumulativeStatistics(pulledItems, totalPulls, isPickup);
 
             // Result: 뽑은 모든 아이템 (10개 그대로)
             result.Result = pulledItems.Select(item => new GachaResultItem
@@ -155,98 +124,7 @@ namespace GachaSystem.Services
                 PickUp = pickupItemIds.Contains(item.Id)  // 픽업 캐릭터가 당첨되었을 때 true
             }).ToList();
 
-            // 누적 통계 생성 (현재 뽑기 타입만)
-            result.Statistics = BuildStatistics(isPickup);
-
             return result;
-        }
-
-        /// <summary>
-        /// 누적 통계 업데이트
-        /// </summary>
-        private void UpdateCumulativeStatistics(List<GachaItem> pulledItems, int totalPulls, bool isPickup)
-        {
-            if (isPickup)
-            {
-                _cumulativePickupPulls += totalPulls;
-                foreach (var item in pulledItems)
-                {
-                    if (_cumulativePickupItems.ContainsKey(item.Id))
-                    {
-                        var existing = _cumulativePickupItems[item.Id];
-                        _cumulativePickupItems[item.Id] = (existing.Name, existing.Rarity, existing.Count + 1);
-                    }
-                    else
-                    {
-                        _cumulativePickupItems[item.Id] = (item.Name, item.Rarity, 1);
-                    }
-                }
-            }
-            else
-            {
-                _cumulativeNormalPulls += totalPulls;
-                foreach (var item in pulledItems)
-                {
-                    if (_cumulativeNormalItems.ContainsKey(item.Id))
-                    {
-                        var existing = _cumulativeNormalItems[item.Id];
-                        _cumulativeNormalItems[item.Id] = (existing.Name, existing.Rarity, existing.Count + 1);
-                    }
-                    else
-                    {
-                        _cumulativeNormalItems[item.Id] = (item.Name, item.Rarity, 1);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// 누적 통계 객체 생성 (전체)
-        /// </summary>
-        private GachaStatistics BuildStatistics()
-        {
-            return new GachaStatistics
-            {
-                Normal = BuildGachaTypeStats(_cumulativeNormalPulls, _cumulativeNormalItems),
-                Pickup = BuildGachaTypeStats(_cumulativePickupPulls, _cumulativePickupItems)
-            };
-        }
-
-        /// <summary>
-        /// 누적 통계 객체 생성 (현재 뽑기 타입만)
-        /// </summary>
-        private GachaStatistics BuildStatistics(bool isPickup)
-        {
-            return new GachaStatistics
-            {
-                Normal = isPickup ? null : BuildGachaTypeStats(_cumulativeNormalPulls, _cumulativeNormalItems),
-                Pickup = isPickup ? BuildGachaTypeStats(_cumulativePickupPulls, _cumulativePickupItems) : null
-            };
-        }
-
-        /// <summary>
-        /// 가챠 타입별 통계 생성
-        /// </summary>
-        private GachaTypeStats BuildGachaTypeStats(int totalPulls, Dictionary<int, (string Name, Rarity Rarity, int Count)> items)
-        {
-            return new GachaTypeStats
-            {
-                TotalPulls = totalPulls,
-                Items = items
-                    .Select(kvp => new GachaItemCount
-                    {
-                        Id = kvp.Key,
-                        Name = kvp.Value.Name,
-                        Rarity = kvp.Value.Rarity,
-                        Count = kvp.Value.Count,
-                        Percentage = totalPulls > 0
-                            ? Math.Round((double)kvp.Value.Count / totalPulls * 100, 2)
-                            : 0
-                    })
-                    .OrderByDescending(x => x.Rarity)
-                    .ThenBy(x => x.Id)
-                    .ToList()
-            };
         }
     }
 }
