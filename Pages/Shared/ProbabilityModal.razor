@@ -10,60 +10,12 @@
                 <div class="probability-sections">
                     <div class="probability-section">
                         <h3>1-9회 뽑기</h3>
-                        <div class="probability-table">
-                            @foreach (var prob in ProbabilityList)
-                            {
-                                var rarityClass = prob.Rarity == Rarity.SSR ? "rarity-3" : prob.Rarity == Rarity.SR ? "rarity-2" : "rarity-1";
-
-                                <div class="probability-row @rarityClass">
-                                    <span class="prob-name">@prob.Name</span>
-                                    <span class="prob-rarity">
-                                        @if (prob.Rarity == Rarity.SSR)
-                                        {
-                                            <span class="rarity-badge">SSR</span>
-                                        }
-                                        else if (prob.Rarity == Rarity.SR)
-                                        {
-                                            <span class="rarity-badge">SR</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="rarity-badge">R</span>
-                                        }
-                                    </span>
-                                    <span class="prob-weight">@prob.Weight%</span>
-                                </div>
-                            }
-                        </div>
+                        @RenderProbabilityTable(ProbabilityList)
                     </div>
 
                     <div class="probability-section confirm">
                         <h3>10회 확정 뽑기</h3>
-                        <div class="probability-table">
-                            @foreach (var prob in ConfirmProbabilityList)
-                            {
-                                var rarityClass = prob.Rarity == Rarity.SSR ? "rarity-3" : prob.Rarity == Rarity.SR ? "rarity-2" : "rarity-1";
-
-                                <div class="probability-row @rarityClass">
-                                    <span class="prob-name">@prob.Name</span>
-                                    <span class="prob-rarity">
-                                        @if (prob.Rarity == Rarity.SSR)
-                                        {
-                                            <span class="rarity-badge">SSR</span>
-                                        }
-                                        else if (prob.Rarity == Rarity.SR)
-                                        {
-                                            <span class="rarity-badge">SR</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="rarity-badge">R</span>
-                                        }
-                                    </span>
-                                    <span class="prob-weight">@prob.Weight%</span>
-                                </div>
-                            }
-                        </div>
+                        @RenderProbabilityTable(ConfirmProbabilityList)
                     </div>
                 </div>
             </div>
@@ -92,4 +44,34 @@
         IsVisible = false;
         await IsVisibleChanged.InvokeAsync(IsVisible);
     }
+
+    private RenderFragment RenderProbabilityTable(List<ProbabilityInfo> items) => __builder =>
+    {
+        <div class="probability-table">
+            @foreach (var prob in items)
+            {
+                var rarityClass = prob.Rarity switch
+                {
+                    Rarity.SSR => "rarity-3",
+                    Rarity.SR => "rarity-2",
+                    _ => "rarity-1"
+                };
+
+                var rarityText = prob.Rarity switch
+                {
+                    Rarity.SSR => "SSR",
+                    Rarity.SR => "SR",
+                    _ => "R"
+                };
+
+                <div class="probability-row @rarityClass">
+                    <span class="prob-name">@prob.Name</span>
+                    <span class="prob-rarity">
+                        <span class="rarity-badge">@rarityText</span>
+                    </span>
+                    <span class="prob-weight">@prob.Weight%</span>
+                </div>
+            }
+        </div>
+    };
 }
