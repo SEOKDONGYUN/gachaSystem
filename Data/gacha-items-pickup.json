@@ -21,31 +21,31 @@
     "Id": 10,
     "Name": "코유키",
     "Rarity": 1,
-    "BaseWeight": 572
+    "BaseWeight": 545
   },
   {
     "Id": 11,
     "Name": "유즈",
     "Rarity": 1,
-    "BaseWeight": 573
+    "BaseWeight": 545
   },
   {
     "Id": 12,
     "Name": "모모이",
     "Rarity": 1,
-    "BaseWeight": 573
+    "BaseWeight": 545
   },
   {
     "Id": 13,
     "Name": "미도리",
     "Rarity": 1,
-    "BaseWeight": 573
+    "BaseWeight": 545
   },
   {
     "Id": 14,
     "Name": "아리스",
     "Rarity": 1,
-    "BaseWeight": 573
+    "BaseWeight": 545
   },
   {
     "Id": 15,
@@ -75,7 +75,7 @@
     "Id": 19,
     "Name": "토키",
     "Rarity": 1,
-    "BaseWeight": 573
+    "BaseWeight": 545
   },
   {
     "Id": 20,
@@ -87,13 +87,13 @@
     "Id": 21,
     "Name": "히비키",
     "Rarity": 1,
-    "BaseWeight": 573
+    "BaseWeight": 546
   },
   {
     "Id": 22,
     "Name": "코토리",
     "Rarity": 1,
-    "BaseWeight": 573
+    "BaseWeight": 546
   },
   {
     "Id": 23,
@@ -105,7 +105,7 @@
     "Id": 24,
     "Name": "마키",
     "Rarity": 1,
-    "BaseWeight": 573
+    "BaseWeight": 546
   },
   {
     "Id": 25,
@@ -129,7 +129,7 @@
     "Id": 28,
     "Name": "레이",
     "Rarity": 1,
-    "BaseWeight": 572
+    "BaseWeight": 546
   },
   {
     "Id": 29,
@@ -141,6 +141,6 @@
     "Id": 30,
     "Name": "에이미",
     "Rarity": 1,
-    "BaseWeight": 572
+    "BaseWeight": 546
   }
 ]
