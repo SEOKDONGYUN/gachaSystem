@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: gacha-system
+    runtime: docker
+    plan: free
+    region: singapore  # 한국과 가장 가까운 무료 리전
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+    healthCheckPath: /
+    autoDeploy: true
