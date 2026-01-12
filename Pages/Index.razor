@@ -1,8 +1,6 @@
 @page "/"
 @inject IGachaService GachaService
 
-<PageTitle>가챠 시스템</PageTitle>
-
 <div class="gacha-container">
     <div class="tab-container">
         <button class="tab-button @(activeTab == "normal" ? "active" : "")"
@@ -19,7 +17,13 @@
         @if (activeTab == "normal")
     {
         <div class="gacha-section">
-            <h2>일반 가챠</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="margin: 0;">일반 가챠</h2>
+                <button class="btn btn-probability" @onclick="ToggleProbabilityTable">
+                    <span style="margin-right: 0.5rem;">📊</span>
+                    확률표 보기
+                </button>
+            </div>
             <button class="btn btn-primary" @onclick="PullNormalGacha" disabled="@isLoading">
                 @if (isLoading && currentGachaType == "normal")
                 {
@@ -35,8 +39,14 @@
     else
     {
         <div class="gacha-section">
-            <h2>픽업 가챠</h2>
-            <p class="pickup-instruction">정확히 3개의 SSR 캐릭터를 선택하세요:</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="margin: 0;">픽업 가챠</h2>
+                <button class="btn btn-probability" @onclick="ToggleProbabilityTable">
+                    <span style="margin-right: 0.5rem;">📊</span>
+                    확률표 보기
+                </button>
+            </div>
+            <p class="pickup-instruction" style="margin-top: 0;">정확히 3개의 SSR 캐릭터를 선택하세요:</p>
 
             <div class="pickup-selection">
                 @foreach (var item in ssrItems)
@@ -166,6 +176,13 @@
     </div>
 </div>
 
+<ProbabilityModal
+    IsVisible="@showProbabilityTable"
+    IsVisibleChanged="@((value) => showProbabilityTable = value)"
+    Title="@(activeTab == "normal" ? "일반 가챠 확률표" : "픽업 가챠 확률표")"
+    ProbabilityList="@GetProbabilityTable()"
+    ConfirmProbabilityList="@GetConfirmProbabilityTable()" />
+
 @code {
     private List<GachaItem> ssrItems = new();
     private HashSet<int> selectedPickupIds = new();
@@ -175,6 +192,7 @@
     private string errorMessage = "";
     private Guid animationKey = Guid.NewGuid();
     private string activeTab = "normal";
+    private bool showProbabilityTable = false;
 
     // 프론트엔드 누적 통계
     private GachaTypeStatistics normalStats = new();
@@ -205,6 +223,88 @@
     private void SwitchTab(string tab)
     {
         activeTab = tab;
+    }
+
+    private void ToggleProbabilityTable()
+    {
+        showProbabilityTable = !showProbabilityTable;
+    }
+
+    private List<ProbabilityInfo> GetConfirmProbabilityTable()
+    {
+        var poolName = activeTab == "normal" ? "confirm" : "pickup-confirm";
+        return BuildTable(poolName, includeLowRarity: false);
+    }
+
+    private List<ProbabilityInfo> GetProbabilityTable()
+    {
+        var poolName = activeTab == "normal" ? "normal" : "pickup";
+        return BuildTable(poolName, includeLowRarity: true);
+    }
+
+    private List<ProbabilityInfo> BuildTable(string poolName, bool includeLowRarity)
+    {
+        var result = new List<ProbabilityInfo>();
+        var pool = GachaTable.Instance.GetGachaPool(poolName);
+        var boostMultiplier = GachaTable.Instance.Settings.BoostMultiplier;
+
+        if (activeTab == "pickup")
+        {
+            // 픽업 가챠: SSR 처음 3개를 개별 "픽업 대상1, 2, 3"으로, 나머지 SSR을 개별 "픽업 비대상1, 2..."으로
+            var ssrItems = pool.Where(x => x.Rarity == Rarity.SSR).OrderBy(x => x.Id).ToList();
+            var pickupSsrItems = ssrItems.Take(3).ToList();
+            var nonPickupSsrItems = ssrItems.Skip(3).ToList();
+
+            // 픽업 대상 개별 표시 (SSR 처음 3개)
+            AddPickupSsr(result, pickupSsrItems, boostMultiplier, isPickupTarget: true);
+
+            // 픽업 비대상 개별 표시 (나머지 SSR)
+            AddPickupSsr(result, nonPickupSsrItems, boostMultiplier, isPickupTarget: false);
+
+            // SR (및 R) 아이템들은 이름 그대로 개별 표시
+            var nonSsrItems = includeLowRarity
+                ? pool.Where(x => x.Rarity != Rarity.SSR).OrderByDescending(x => x.Rarity).ThenBy(x => x.Id)
+                : pool.Where(x => x.Rarity == Rarity.SR).OrderBy(x => x.Id);
+
+            AddItems(result, nonSsrItems);
+        }
+        else
+        {
+            // 일반 가챠: 모든 아이템을 개별 표시
+            AddItems(result, pool.OrderByDescending(x => x.Rarity).ThenBy(x => x.Id));
+        }
+
+        return result;
+    }
+
+    private void AddPickupSsr(List<ProbabilityInfo> result, List<GachaItem> items, int boostMultiplier, bool isPickupTarget)
+    {
+        for (int i = 0; i < items.Count; i++)
+        {
+            var item = items[i];
+            int weight = isPickupTarget ? item.BaseWeight + boostMultiplier : item.BaseWeight;
+            double percentage = (double)weight / 100;
+            result.Add(new ProbabilityInfo
+            {
+                Name = isPickupTarget ? $"픽업 대상{i + 1}" : $"픽업 비대상{i + 1}",
+                Rarity = Rarity.SSR,
+                Weight = percentage.ToString("F2")
+            });
+        }
+    }
+
+    private void AddItems(List<ProbabilityInfo> result, IEnumerable<GachaItem> items)
+    {
+        foreach (var item in items)
+        {
+            double percentage = (double)item.BaseWeight / 100;
+            result.Add(new ProbabilityInfo
+            {
+                Name = item.Name,
+                Rarity = item.Rarity,
+                Weight = percentage.ToString("F2")
+            });
+        }
     }
 
     private void TogglePickup(int id, bool isChecked)

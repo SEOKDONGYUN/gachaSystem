@@ -1,0 +1,95 @@
+@if (IsVisible)
+{
+    <div class="modal-overlay" @onclick="Close">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h2>@Title</h2>
+                <button class="modal-close" @onclick="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="probability-sections">
+                    <div class="probability-section">
+                        <h3>1-9회 뽑기</h3>
+                        <div class="probability-table">
+                            @foreach (var prob in ProbabilityList)
+                            {
+                                var rarityClass = prob.Rarity == Rarity.SSR ? "rarity-3" : prob.Rarity == Rarity.SR ? "rarity-2" : "rarity-1";
+
+                                <div class="probability-row @rarityClass">
+                                    <span class="prob-name">@prob.Name</span>
+                                    <span class="prob-rarity">
+                                        @if (prob.Rarity == Rarity.SSR)
+                                        {
+                                            <span class="rarity-badge">SSR</span>
+                                        }
+                                        else if (prob.Rarity == Rarity.SR)
+                                        {
+                                            <span class="rarity-badge">SR</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="rarity-badge">R</span>
+                                        }
+                                    </span>
+                                    <span class="prob-weight">@prob.Weight%</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="probability-section confirm">
+                        <h3>10회 확정 뽑기</h3>
+                        <div class="probability-table">
+                            @foreach (var prob in ConfirmProbabilityList)
+                            {
+                                var rarityClass = prob.Rarity == Rarity.SSR ? "rarity-3" : prob.Rarity == Rarity.SR ? "rarity-2" : "rarity-1";
+
+                                <div class="probability-row @rarityClass">
+                                    <span class="prob-name">@prob.Name</span>
+                                    <span class="prob-rarity">
+                                        @if (prob.Rarity == Rarity.SSR)
+                                        {
+                                            <span class="rarity-badge">SSR</span>
+                                        }
+                                        else if (prob.Rarity == Rarity.SR)
+                                        {
+                                            <span class="rarity-badge">SR</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="rarity-badge">R</span>
+                                        }
+                                    </span>
+                                    <span class="prob-weight">@prob.Weight%</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> IsVisibleChanged { get; set; }
+
+    [Parameter]
+    public string Title { get; set; } = "확률표";
+
+    [Parameter]
+    public List<ProbabilityInfo> ProbabilityList { get; set; } = new();
+
+    [Parameter]
+    public List<ProbabilityInfo> ConfirmProbabilityList { get; set; } = new();
+
+    private async Task Close()
+    {
+        IsVisible = false;
+        await IsVisibleChanged.InvokeAsync(IsVisible);
+    }
+}
