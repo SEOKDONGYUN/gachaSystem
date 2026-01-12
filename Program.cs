@@ -1,4 +1,5 @@
 using GachaSystem.Services;
+using Microsoft.Extensions.Logging.Console;
 using System.Text;
 
 // 콘솔 인코딩을 UTF-8로 설정 (한글 출력 지원)
@@ -7,18 +8,12 @@ Console.InputEncoding = Encoding.UTF8;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 콘솔 로거 포맷 설정
+// 콘솔 로거 포맷 설정 (KST 시간대 사용)
 builder.Logging.ClearProviders();
+builder.Logging.AddConsoleFormatter<KstConsoleFormatter, SimpleConsoleFormatterOptions>();
 builder.Logging.AddConsole(options =>
 {
-    options.FormatterName = "simple";
-});
-builder.Logging.AddSimpleConsole(options =>
-{
-    options.SingleLine = true;
-    options.IncludeScopes = false;
-    options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
-    options.UseUtcTimestamp = false;
+    options.FormatterName = "kst";
 });
 
 // Add services to the container
