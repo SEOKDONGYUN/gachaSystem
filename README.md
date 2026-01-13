@@ -5,8 +5,7 @@ ASP.NET Core 기반 RESTful API 가중치 가챠 시스템입니다.
 ## 주요 기능
 
 - **일반 가챠**: 10회 고정 뽑기, 10회차 레어리티 2 이상 확정
-- **픽업 가챠**: SSR 아이템 3개 선택 시 확률 상승 + 10회차 레어리티 2 이상 확정
-- **가챠 풀 조회**: 사용 가능한 가챠 풀 목록 확인
+- **픽업 가챠**: SSR 아이템 3개 선택 시 확률 상승, 10회차 레어리티 2 이상 확정
 - **서버 시작 시 데이터 로드**: JSON 파일 기반 가챠 풀 초기화
 
 ## 프로젝트 구조
@@ -14,23 +13,28 @@ ASP.NET Core 기반 RESTful API 가중치 가챠 시스템입니다.
 ```
 GachaSystem/
 ├── Controllers/
-│   └── GachaController.cs      # REST API 엔드포인트
+│   └── GachaController.cs       # REST API 엔드포인트
 ├── Models/
-│   ├── GachaItem.cs            # 가챠 아이템 모델
-│   ├── GachaResult.cs          # 가챠 결과 모델
-│   └── GachaRequest.cs         # 가챠 요청 모델
+│   ├── GachaItem.cs             # 가챠 아이템 모델
+│   ├── GachaResult.cs           # 가챠 결과 모델
+│   ├── GachaRequest.cs          # 가챠 요청 모델
+│   ├── GachaSettings.cs         # 가챠 설정 모델
+│   ├── Rarity.cs                # 레어리티 enum
+│   └── ProbabilityInfo.cs       # 확률 정보 모델
 ├── Services/
-│   ├── IGachaService.cs        # 가챠 서비스 인터페이스
-│   ├── GachaService.cs         # 가챠 로직 구현
-│   ├── GachaTable.cs           # 가챠 데이터 싱글톤 관리
-│   └── WeightedRandom.cs       # 가중치 랜덤 알고리즘
+│   ├── IGachaService.cs         # 가챠 서비스 인터페이스
+│   ├── GachaService.cs          # 가챠 로직 구현
+│   ├── GachaTable.cs            # 가챠 데이터 싱글톤 관리
+│   ├── WeightedRandom.cs        # 가중치 랜덤 알고리즘
+│   └── KstConsoleFormatter.cs   # KST 시간대 로깅 포매터
 ├── Data/
 │   ├── gacha-items-normal.json          # 일반 가챠 풀
 │   ├── gacha-items-confirm.json         # 일반 가챠 확정 풀
 │   ├── gacha-items-pickup.json          # 픽업 가챠 풀
-│   └── gacha-items-pickup-confirm.json  # 픽업 가챠 확정 풀
-├── Program.cs                  # 애플리케이션 진입점
-└── appsettings.json           # 설정 파일
+│   ├── gacha-items-pickup-confirm.json  # 픽업 가챠 확정 풀
+│   └── gacha-settings.json              # 가챠 설정 (픽업 부스트)
+├── Program.cs                   # 애플리케이션 진입점
+└── appsettings.json            # 설정 파일
 ```
 
 ## 실행 방법
@@ -42,9 +46,13 @@ dotnet restore
 dotnet run
 ```
 
-### 2. Swagger UI 접속
+### 2. Blazor 접속
 
-브라우저에서 `https://localhost:5001` 또는 `http://localhost:5000` 접속
+브라우저에서 `http://localhost:5000` 접속
+
+### 3. Swagger UI 접속
+
+브라우저에서 `http://localhost:5000/swagger` 접속
 
 ## API 엔드포인트
 
@@ -76,28 +84,7 @@ POST /api/gacha/pull
       "rarity": 2, 
       "pickUp": false 
     }
-  ],
-  "statistics": {
-    "normal": {
-      "totalPulls": 50,
-      "items": [
-        { 
-          "id": 1, 
-          "name": "유메", 
-          "rarity": 3, 
-          "count": 5, 
-          "percentage": 10 
-        },
-        { 
-          "id": 3, 
-          "name": "노노미", 
-          "rarity": 2, 
-          "count": 15, 
-          "percentage": 30
-        }
-      ]
-    }
-  }
+  ]
 }
 ```
 
@@ -139,34 +126,20 @@ Content-Type: application/json
       "rarity": 2, 
       "pickUp": false 
     }
-  ],
-  "statistics": {
-    "pickup": {
-      "totalPulls": 30,
-      "items": [
-        { 
-          "id": 7, 
-          "name": "리오", 
-          "rarity": 3, 
-          "count": 8, 
-          "percentage": 26.67
-        }
-      ]
-    }
-  }
+  ]
 }
 ```
 
 ## 확률 시스템
 
-### 기본 가중치 분포 (일반 가챠)
+### 기본 가중치 분포 (픽업 가챠)
 
 **일반 풀 (normal):**
 | 등급 | 개수 | 가중치 | 확률 |
 |------|------|--------|------|
 | SSR (레어리티 3) | 7개 | 100 | 7% |
 | SR (레어리티 2) | 6개 | 500 | 30% |
-| R (레어리티 1) | 11개 | 572-573 | 60% |
+| R (레어리티 1) | 11개 | 545-546 | 60% |
 | **합계** | **24개** | **9700** | **97%** |
 
 **확정 풀 (confirm):**
@@ -232,16 +205,6 @@ Content-Type: application/json
 
 - 9회는 일반 풀 사용
 - 10회는 자동으로 confirm 풀로 전환하여 SR 이상 확정
-
-## 향후 개선 사항
-
-- [ ] 데이터베이스 연동 (Entity Framework Core)
-- [ ] 사용자 인벤토리 시스템
-- [ ] 가챠 히스토리 저장
-- [ ] 천장 시스템 (Pity System)
-- [ ] JWT 인증/인가
-- [ ] 단위 테스트 추가
-- [ ] Redis 캐싱
 
 ## 라이선스
 
