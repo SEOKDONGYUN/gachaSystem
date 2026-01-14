@@ -48,7 +48,7 @@ namespace Services
             }
         }
 
-        private int _Random()
+        private int GetRandomIndex()
         {
             var table = _table;
             var weight = (int)Math.Floor(_random.NextDouble() * _weight);
@@ -73,9 +73,9 @@ namespace Services
 
         public T Random()
         {
-            return _table[_Random()].Value;
+            return _table[GetRandomIndex()].Value;
         }
 
-        public int Weight() => _weight;
+        public int Weight => _weight;
     }
 }
